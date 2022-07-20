@@ -165,8 +165,13 @@ str(k2)
 fviz_cluster(k2, data = clus, main = "Uber Spread by Cluster with 2 Centers")
 
 k2
+k2$cluster
 
-table(k2$cluster, uber_data$month)
+cluster <- kmeans(clus, center=3, nstart=20)
+
+table(cluster$cluster, uber_data$Base)
+
+uber_data$Base
 
 ngen <- k2
 

@@ -1,0 +1,16 @@
+"0","#combine 3 dataset of 3 months"
+"0","uber_data <- rbind(apr_data, may_data, jun_data)"
+"0",""
+"0",""
+"0","which(is.na(uber_data$Date.Time)) "
+"1","integer(0)
+"
+"0","which(is.na(uber_data$Lat)) "
+"1","integer(0)
+"
+"0","which(is.na(uber_data$Lon)) "
+"1","integer(0)
+"
+"0","which(is.na(uber_data$Base)) "
+"1","integer(0)
+"

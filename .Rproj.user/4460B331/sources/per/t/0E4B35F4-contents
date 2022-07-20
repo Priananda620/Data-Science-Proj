@@ -1,0 +1,286 @@
+---
+title: "Uber Spread Analysis"
+author: "Joerio Christo Chandra, Priananda Azhar, Syafiq"
+date: "19-07-2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(ggplot2)
+library(ggthemes)
+library(lubridate)
+library(dplyr)
+library(tidyr)
+library(DT)
+library(factoextra)
+
+options(dplyr.summarise.inform = FALSE)
+```
+
+### BACKGROUND
+
+As part of our final project for Data Science course (STIS3023), we run several analyses using Uber's data. Our main objectives are:
+
+* drawing plots
+* clustering
+
+### OBJECTIVE
+
+* to get a gist of the Uber service spread based on locations of order
+* to find out the trend of customers' order locations based on day, month, hour
+
+### SOURCE
+
+For this project, we use the Uber data that contains latitude and longitude. It is downloaded from <https://data.fivethirtyeight.com/>{Five Thirty Eight}.
+
+### DATA PREPARATION
+
+
+
+#### Data Reading
+In the beningging, we read the dataset first. We are limiting ourselves to using three CSV files for this project, which is the data of Uber orders on months April to June of the year 2014. The data example of the first 5 rows can be seen below.
+```{r echo=FALSE}
+apr_data <- read.csv("dataset/uber-raw-data-apr14.csv")
+may_data <- read.csv("dataset/uber-raw-data-may14.csv")
+jun_data <- read.csv("dataset/uber-raw-data-jun14.csv")
+
+```
+
+```{r}
+head(jun_data, 5)
+```
+
+#### Preprocessing
+Then, in the prepocessing step, we perform the appropriate formatting of Date.Time column. Then, we proceed to create factors like day, month, year and more. After we reformat the Date.Time column, we created each individual column for hour, minute, second, day, month and year. We will combine all of this data into a single dataframe called 'uber_data'.
+
+```{r}
+#combine 3 dataset of 3 months
+uber_data <- rbind(apr_data, may_data, jun_data)
+
+#checking for na values
+which(is.na(uber_data$Date.Time)) 
+which(is.na(uber_data$Lat)) 
+which(is.na(uber_data$Lon)) 
+which(is.na(uber_data$Base)) 
+
+```
+
+```{r}
+
+#Format existing date from the DS into %m/%d/%Y %H:%M:%S
+uber_data$Date.Time <- as.POSIXct(uber_data$Date.Time, format = "%m/%d/%Y %H:%M:%S")
+
+#add a new column "Time" with the value of formatted existing "Date.Time" column
+uber_data$Time <- format(uber_data$Date.Time, format="%H:%M:%S")
+
+#format to year month day hour minute second
+uber_data$Date.Time <- ymd_hms(uber_data$Date.Time)
+
+#add new columns of day, month, year and dayofweek from factor() then day/month/year/etc() to obtain respectively
+uber_data$day <- factor(day(uber_data$Date.Time))
+uber_data$month <- factor(month(uber_data$Date.Time, label = TRUE))
+uber_data$year <- factor(year(uber_data$Date.Time))
+uber_data$dayofweek <- factor(wday(uber_data$Date.Time, label = TRUE))
+
+uber_data$hour <- factor(hour(hms(uber_data$Time)))
+uber_data$minute <- factor(minute(hms(uber_data$Time)))
+uber_data$second <- factor(second(hms(uber_data$Time)))
+```
+
+#### DATA ANALYSIS
+
+In the Data analysis step, we will visualize the rides in New York city by creating a geo-plot that will help us to visualize the rides during April until June 2014.
+
+
+```{r echo=FALSE}
+#For the plot to certain area of the map by limiting the Latitude and Longtitude
+min_lat <- 40.5774
+max_lat <- 40.9176
+min_long <- -74.15
+max_long <- -73.7004
+```
+
+```{r}
+ggplot(uber_data, aes(x=Lon, y=Lat)) +
+  geom_point(size=1, color = "blue") +
+  scale_x_continuous(limits=c(min_long, max_long)) +
+  scale_y_continuous(limits=c(min_lat, max_lat)) +
+  theme_map() +
+  ggtitle("NYC Map Based On Uber Ride Orders During Apr-Jun 2014")
+
+```
+
+
+### trips by hours in a day
+We use the ggplot function to plot the number of trips made in an hour and dplyr to aggregate the data. From the analysis, we find that the number of trips are higher around 6am to 8am and 3pm to 6pm might due to work/school hours. 
+
+
+```{r}
+hour_data<-uber_data %>%
+  group_by(hour) %>%
+  dplyr::summarize(Total = n())
+
+ggplot(hour_data, aes(hour, Total)) + 
+  geom_bar(stat = "identity", fill = "steelblue", color = "red") +
+  ggtitle("Trips Every Hour") +
+  theme(legend.position = "none") +
+  scale_y_continuous(labels = scales::comma_format())
+```
+
+
+Here we want to visualize how many trips are in a day hours of each month (Apr, May, Jun)
+```{r}
+month_hour <- uber_data %>%
+  group_by(month, hour) %>%
+  dplyr::summarize(Total = n())
+
+ggplot(month_hour, aes(hour, Total, fill = month)) + 
+  geom_bar(stat = "identity") +
+  ggtitle("Trips by Hour and Month") +
+  scale_y_continuous(labels = scales::comma_format())
+
+```
+
+
+
+```{r echo=FALSE}
+colors = c("orange", "red", "blue", "green", "purple", "black", "pink")
+```
+
+
+### Trips during every day of the month
+We plot our data based on every day of the month. From the result, we observe that in April 30th had the highest trip in the year.
+
+```{r}
+day_group <- uber_data %>%
+  group_by(day) %>%
+  dplyr::summarize(Total = n())
+
+
+ggplot(day_group, aes(day, Total)) + 
+  geom_bar(stat = "identity", fill = "steelblue") +
+  ggtitle("Trips Every Day") +
+  theme(legend.position = "none") +
+  scale_y_continuous(labels = scales::comma_format())
+```
+
+
+### Trips by every day in a month of a year
+blaaaa
+
+```{r}
+day_month_group <- uber_data %>%
+  group_by(month, day) %>%
+  dplyr::summarize(Total = n())
+
+ggplot(day_month_group, aes(day, Total, fill = month)) + 
+  geom_bar( stat = "identity") +
+  ggtitle("Trips by Days in Months (3)") +
+  scale_y_continuous(labels = scales::comma_format()) +
+  scale_fill_manual(values = colors)
+
+```
+
+
+### Number of trips during months in a year
+We visualize the number of trips each month of the year. We found that based on the graph, most of the trips were made during the month of Jun
+
+
+```{r}
+month_group <- uber_data %>%
+  group_by(month) %>%
+  dplyr::summarize(Total = n())
+
+ggplot(month_group, aes(month, Total, fill = month)) + 
+  geom_bar( stat = "identity") +
+  ggtitle("Trips by Month") +
+  theme(legend.position = "none") +
+  scale_y_continuous(labels = scales::comma_format()) +
+  scale_fill_manual(values = colors)
+```
+
+
+### Trips by dayofweek every month in a year
+We plot the number of trips by day and month. Based on our visualization, we observed that in September most of the trip were made. In the month of September, the pick day of the trips is on Tuesday.
+
+
+```{r}
+month_weekday <- uber_data %>%
+  group_by(month, dayofweek) %>%
+  dplyr::summarize(Total = n())
+
+ggplot(month_weekday, aes(month, Total, fill = dayofweek)) + 
+  geom_bar( stat = "identity", position = "dodge") +
+  ggtitle("Trips by Days in a week and in Months (3)") +
+  scale_y_continuous(labels = scales::comma_format()) +
+  scale_fill_manual(values = colors)
+
+```
+
+
+### CALCULATING NUMBER OF TRIPS USING BASES
+
+We plot the number of trips by the passengers from each bases. There are five bases - B02512, B02598, B02617, B02682 and B02764. Base B02617 had the highest number of trips in the month.
+
+
+```{r}
+ggplot(uber_data, aes(Base)) + 
+  geom_bar(fill = "darkred") +
+  scale_y_continuous(labels = scales::comma_format()) +
+  ggtitle("Trips by Bases")
+
+ggplot(uber_data, aes(Base, fill = month)) + 
+  geom_bar(position = "dodge") +
+  scale_y_continuous(labels = scales::comma_format()) +
+  ggtitle("Trips by Month and Bases") +
+  scale_fill_manual(values = colors)
+```
+
+
+
+
+### HeatMap
+From heatmap, we can see correlation between each column, here as we see the lighter color has the most correlation between two features. It seems like the B02598 has the highest correlation on the month of may.
+
+```{r}
+month_base <-  uber_data %>%
+  group_by(Base, month) %>%
+  dplyr::summarize(Total = n())
+
+ggplot(month_base, aes(Base, month, fill = Total)) +
+  geom_tile(color = "white") +
+  ggtitle("Heatmap by Month and Bases")
+```
+
+
+### K-MEANS CLUSTERING
+
+```{r}
+clus <- uber_data %>%
+  group_by(Lat, Lon) %>%
+  dplyr::summarize()
+```
+
+let's use k=6 for this case
+
+```{r}
+k2 <- kmeans(clus, centers = 2, nstart = 25)
+str(k2)
+fviz_cluster(k2, data = clus, main = "Uber Spread by Cluster with 2 Centers")
+```
+
+
+### Conclusion
+This project able to give an insights of when and where uber rides happening by the avaibility of features the data sets provide such as Lat/Long, date (Y-M-D H:M:S format), and base. This allows our group to do analyzation of Uber rides by making plots to visualize them in a specific condition we want by groupping by/aggregate for example. In a real world company, analyzing data like this can really help them to grow their market or making their customers more satisfied. Here is why Data Analyst really helps company in terms of business. For example from our analyzation, there are more Uber rides at around 6AM and 7PM why?, because we think it is due to the morning hours for students/workers to go to their school/office and return to home time. In this case the company in this case "Uber" can try to give more discounts at these times for example to attract more user using this app for transportation. There are some other points to be concluded which are:
+
+* By using data analysis tools provided in libraries or the langguages basis it self such as Rlang and pyhton really helps in data analysis or creating Machine Learning Model.
+
+* The outcome of this project (HTML) can be accessed by any form of devices such as mobile and PC desktop.
+
+* Data analyzing can be very useful for companies to expand/analyze their business.
+
+* By the availability of tools/libraries we have, made data exploratory simpler and effortless.
+
+* The data are automatically stored by the companies databases from their mobile app/web app to the big data pipeline and can be easily fetched by them to do their own analyzation.

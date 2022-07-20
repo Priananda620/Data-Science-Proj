@@ -56,14 +56,29 @@ head(jun_data, 5)
 Then, in the prepocessing step, we perform the appropriate formatting of Date.Time column. Then, we proceed to create factors like day, month, year and more. After we reformat the Date.Time column, we created each individual column for hour, minute, second, day, month and year. We will combine all of this data into a single dataframe called 'uber_data'.
 
 ```{r}
+#combine 3 dataset of 3 months
 uber_data <- rbind(apr_data, may_data, jun_data)
 
+#checking for na values
+which(is.na(uber_data$Date.Time)) 
+which(is.na(uber_data$Lat)) 
+which(is.na(uber_data$Lon)) 
+which(is.na(uber_data$Base)) 
+
+```
+
+```{r}
+
+#Format existing date from the DS into %m/%d/%Y %H:%M:%S
 uber_data$Date.Time <- as.POSIXct(uber_data$Date.Time, format = "%m/%d/%Y %H:%M:%S")
 
+#add a new column "Time" with the value of formatted existing "Date.Time" column
 uber_data$Time <- format(uber_data$Date.Time, format="%H:%M:%S")
 
+#format to year month day hour minute second
 uber_data$Date.Time <- ymd_hms(uber_data$Date.Time)
 
+#add new columns of day, month, year and dayofweek from factor() then day/month/year/etc() to obtain respectively
 uber_data$day <- factor(day(uber_data$Date.Time))
 uber_data$month <- factor(month(uber_data$Date.Time, label = TRUE))
 uber_data$year <- factor(year(uber_data$Date.Time))
@@ -80,6 +95,7 @@ In the Data analysis step, we will visualize the rides in New York city by creat
 
 
 ```{r echo=FALSE}
+#For the plot to certain area of the map by limiting the Latitude and Longtitude
 min_lat <- 40.5774
 max_lat <- 40.9176
 min_long <- -74.15
@@ -87,18 +103,19 @@ max_long <- -73.7004
 ```
 
 ```{r}
-#ggplot(uber_data, aes(x=Lon, y=Lat)) +
-#  geom_point(size=1, color = "blue") +
-#  scale_x_continuous(limits=c(min_long, max_long)) +
-#  scale_y_continuous(limits=c(min_lat, max_lat)) +
-#  theme_map() +
-#  ggtitle("NYC Map Based On Uber Ride Orders During Apr-Jun 2014")
+ggplot(uber_data, aes(x=Lon, y=Lat)) +
+  geom_point(size=1, color = "blue") +
+  scale_x_continuous(limits=c(min_long, max_long)) +
+  scale_y_continuous(limits=c(min_lat, max_lat)) +
+  theme_map() +
+  ggtitle("NYC Map Based On Uber Ride Orders During Apr-Jun 2014")
 
 ```
 
 
 ### trips by hours in a day
-We use the ggplot function to plot the number of trips made in a day and dplyr to aggregate the data. From the analysis, we find that the number of trips are higher around 5pm to 6pm. 
+We use the ggplot function to plot the number of trips made in an hour and dplyr to aggregate the data. From the analysis, we find that the number of trips are higher around 6am to 8am and 3pm to 6pm might due to work/school hours. 
+
 
 ```{r}
 hour_data<-uber_data %>%
@@ -113,7 +130,7 @@ ggplot(hour_data, aes(hour, Total)) +
 ```
 
 
-blablabala
+Here we want to visualize how many trips are in a day hours of each month (Apr, May, Jun)
 ```{r}
 month_hour <- uber_data %>%
   group_by(month, hour) %>%
@@ -125,8 +142,6 @@ ggplot(month_hour, aes(hour, Total, fill = month)) +
   scale_y_continuous(labels = scales::comma_format())
 
 ```
-
-
 
 
 
@@ -162,7 +177,7 @@ day_month_group <- uber_data %>%
 
 ggplot(day_month_group, aes(day, Total, fill = month)) + 
   geom_bar( stat = "identity") +
-  ggtitle("Trips by Day and Month") +
+  ggtitle("Trips by Days in Months (3)") +
   scale_y_continuous(labels = scales::comma_format()) +
   scale_fill_manual(values = colors)
 
@@ -170,7 +185,7 @@ ggplot(day_month_group, aes(day, Total, fill = month)) +
 
 
 ### Number of trips during months in a year
-We visualize the number of trips each month of the year. We found that based on the graph, most of the trips were made during the month of September.
+We visualize the number of trips each month of the year. We found that based on the graph, most of the trips were made during the month of Jun
 
 
 ```{r}
@@ -188,7 +203,7 @@ ggplot(month_group, aes(month, Total, fill = month)) +
 
 
 ### Trips by dayofweek every month in a year
-blabla
+We plot the number of trips by day and month. Based on our visualization, we observed that in September most of the trip were made. In the month of September, the pick day of the trips is on Tuesday.
 
 
 ```{r}
@@ -198,7 +213,7 @@ month_weekday <- uber_data %>%
 
 ggplot(month_weekday, aes(month, Total, fill = dayofweek)) + 
   geom_bar( stat = "identity", position = "dodge") +
-  ggtitle("Trips by Day and Month") +
+  ggtitle("Trips by Days in a week and in Months (3)") +
   scale_y_continuous(labels = scales::comma_format()) +
   scale_fill_manual(values = colors)
 
@@ -257,5 +272,15 @@ fviz_cluster(k2, data = clus, main = "Uber Spread by Cluster with 2 Centers")
 ```
 
 
+### Conclusion
+This project able to give an insights of when and where uber rides happening by the avaibility of features the data sets provide such as Lat/Long, date (Y-M-D H:M:S format), and base. This allows our group to do analyzation of Uber rides by making plots to visualize them in a specific condition we want by groupping by/aggregate for example. In a real world company, analyzing data like this can really help them to grow their market or making their customers more satisfied. Here is why Data Analyst really helps company in terms of business. For example from our analyzation, there are more Uber rides at around 6AM and 7PM why?, because we think it is due to the morning hours for students/workers to go to their school/office and return to home time. In this case the company in this case "Uber" can try to give more discounts at these times for example to attract more user using this app for transportation. There are some other points to be concluded which are:
 
-### 
+* By using data analysis tools provided in libraries or the langguages basis it self such as Rlang and pyhton really helps in data analysis or creating Machine Learning Model.
+
+* The outcome of this project (HTML) can be accessed by any form of devices such as mobile and PC desktop.
+
+* Data analyzing can be very useful for companies to expand/analyze their business.
+
+* By the availability of tools/libraries we have, made data exploratory simpler and effortless.
+
+* The data are automatically stored by the companies databases from their mobile app/web app to the big data pipeline and can be easily fetched by them to do their own analyzation.
