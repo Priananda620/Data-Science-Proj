@@ -1,0 +1,5 @@
+"0","apr_data <- read.csv(""dataset/uber-raw-data-apr14.csv"")"
+"0","may_data <- read.csv(""dataset/uber-raw-data-may14.csv"")"
+"0","jun_data <- read.csv(""dataset/uber-raw-data-jun14.csv"")"
+"0",""
+"0","uber_data <- rbind(apr_data, may_data, jun_data)"
