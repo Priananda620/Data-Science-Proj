@@ -172,11 +172,11 @@ ngen <- k2
 
 ngen.tot <- vector(mode="character", length=10)
 for (i in 1:10){
-  irisCluster <- kmeans(clus, center=i, nstart=20)
+  irisCluster <- kmeans(clus, center=i, nstart=25)
   ngen.tot[i] <- ngen$tot.withinss
 }
 
-plot(1:10, ngentot, type="b", pch=19)
+plot(1:10, ngen.tot, type="b", pch=19)
 
 library(cluster)
 clusplot(iris, irisCluster$cluster, color=T, shade=T, labels=0, lines=0)
