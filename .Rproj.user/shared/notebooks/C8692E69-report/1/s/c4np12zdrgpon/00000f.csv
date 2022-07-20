@@ -1,0 +1,7 @@
+"0","month_base <-  uber_data %>%"
+"0","  group_by(Base, month) %>%"
+"0","  dplyr::summarize(Total = n())"
+"0",""
+"0","ggplot(month_base, aes(Base, month, fill = Total)) +"
+"0","  geom_tile(color = ""white"") +"
+"0","  ggtitle(""Heatmap by Month and Bases"")"

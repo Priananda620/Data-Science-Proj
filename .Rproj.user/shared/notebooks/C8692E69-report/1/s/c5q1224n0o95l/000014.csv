@@ -1,0 +1,4 @@
+"0","ggplot(uber_data, aes(Base)) + "
+"0","  geom_bar(fill = ""darkred"") +"
+"0","  scale_y_continuous(labels = scales::comma_format()) +"
+"0","  ggtitle(""Trips by Bases"")"

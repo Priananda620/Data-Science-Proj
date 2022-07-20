@@ -1,0 +1,6 @@
+"0",""
+"0","ggplot(uber_data, aes(Base, fill = month)) + "
+"0","  geom_bar(position = ""dodge"") +"
+"0","  scale_y_continuous(labels = scales::comma_format()) +"
+"0","  ggtitle(""Trips by Month and Bases"") +"
+"0","  scale_fill_manual(values = colors)"

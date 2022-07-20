@@ -160,7 +160,7 @@ clus <- uber_data %>%
   dplyr::summarize()
 
 # rmd: let's use k=6 for this case
-k2 <- kmeans(clus, centers = 2, nstart = 25)
+k2 <- kmeans(clus, centers = 3, nstart = 25)
 str(k2)
 fviz_cluster(k2, data = clus, main = "Uber Spread by Cluster with 2 Centers")
 
